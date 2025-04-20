@@ -1,0 +1,81 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    container_name: opsci-postgres
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: strapi
+      POSTGRES_USER: strapi
+      POSTGRES_PASSWORD: safepassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - strapi
+
+  strapi:
+    build: .
+    container_name: fyk_strapi
+    restart: always
+    ports:
+      - "1337:1337"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: strapi
+      DATABASE_USERNAME: strapi
+      DATABASE_PASSWORD: safepassword
+      DATABASE_SSL: 'false'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    #command: sh -c "yarn install && yarn develop"
+    networks:
+      - strapi
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - strapi
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka
+    restart: always
+    ports:
+      - "9092:9092"
+    expose:
+      - "9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - strapi
+
+networks:
+  strapi:
+    name: Strapi
+    driver: bridge
+
+volumes:
+  pgdata:

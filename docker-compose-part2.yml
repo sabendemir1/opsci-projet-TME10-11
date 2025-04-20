@@ -1,0 +1,114 @@
+version: '3'
+
+services:
+  product-producer:
+    build: ./product-producer-master
+    container_name: product-producer
+    environment:
+      BROKER_1: kafka:9092
+      BROKER_2: kafka:9092
+      BROKER_3: kafka:9092
+      STRAPI_TOKEN: 3080d5e17f46899e60cf39dfbb80c7fed9f2727697c5f9e3863151a620de33798f9a5b7e467cd50aaa7a9a3f51b6087e436b9d301be3e10f9a50f7e4b9453e0c9de3241c9c020b5aaf212ec72a46fba3a8bf08a323207df257dea122c052c27b935fb6187351691b9a54950f58c74c24b5848799c0661d99300f0c6b19df150d
+      STRAPI_URL: http://strapi:1337
+      TOPIC: product
+      ERROR_TOPIC: error
+      FILE_NAME: products.csv
+    volumes:
+      - ./product-producer-master:/usr/src/app
+    working_dir: /usr/src/app
+    depends_on:
+      - product-consumer
+    networks:
+      - "strapi"
+
+  product-consumer:
+    platform: linux/amd64
+    image: arthurescriou/product-consumer:1.0.3
+    container_name: product-consumer
+    environment:
+      BROKER_1: kafka:9092
+      BROKER_2: kafka:9092
+      BROKER_3: kafka:9092
+      STRAPI_TOKEN: 3080d5e17f46899e60cf39dfbb80c7fed9f2727697c5f9e3863151a620de33798f9a5b7e467cd50aaa7a9a3f51b6087e436b9d301be3e10f9a50f7e4b9453e0c9de3241c9c020b5aaf212ec72a46fba3a8bf08a323207df257dea122c052c27b935fb6187351691b9a54950f58c74c24b5848799c0661d99300f0c6b19df150d
+      STRAPI_URL: http://strapi:1337
+      TOPIC: product
+      BEGINNING: "false"
+      ERROR_TOPIC: error
+    networks:
+      - "strapi"
+
+  event-producer:
+    platform: linux/amd64
+    image: arthurescriou/event-producer:1.0.3
+    container_name: event-producer
+    environment:
+      BROKER_1: kafka:9092
+      BROKER_2: kafka:9092
+      BROKER_3: kafka:9092
+      STRAPI_TOKEN: 3080d5e17f46899e60cf39dfbb80c7fed9f2727697c5f9e3863151a620de33798f9a5b7e467cd50aaa7a9a3f51b6087e436b9d301be3e10f9a50f7e4b9453e0c9de3241c9c020b5aaf212ec72a46fba3a8bf08a323207df257dea122c052c27b935fb6187351691b9a54950f58c74c24b5848799c0661d99300f0c6b19df150d
+      STRAPI_URL: http://strapi:1337
+      TOPIC: event
+      FILE_NAME: events.csv
+      ERROR_TOPIC: error
+    volumes:
+      - ./kafka-products-event-stocks/events.csv:/events.csv
+    depends_on:
+      - event-consumer
+    networks:
+      - "strapi"
+
+  event-consumer:
+    platform: linux/amd64
+    image: arthurescriou/event-consumer:1.0.0
+    container_name: event-consumer
+    environment:
+      BROKER_1 : kafka:9092
+      BROKER_2 : kafka:9092
+      BROKER_3 : kafka:9092
+      STRAPI_TOKEN: 3080d5e17f46899e60cf39dfbb80c7fed9f2727697c5f9e3863151a620de33798f9a5b7e467cd50aaa7a9a3f51b6087e436b9d301be3e10f9a50f7e4b9453e0c9de3241c9c020b5aaf212ec72a46fba3a8bf08a323207df257dea122c052c27b935fb6187351691b9a54950f58c74c24b5848799c0661d99300f0c6b19df150d
+      STRAPI_URL: http://strapi:1337
+      TOPIC: event
+      BEGINNING: "false"
+      ERROR_TOPIC: error
+    networks:
+      - "strapi"
+
+  stock-producer:
+    platform: linux/amd64
+    image: arthurescriou/stock-producer:1.0.1
+    container_name: stock-producer
+    environment:
+      BROKER_1 : kafka:9092
+      BROKER_2 : kafka:9092
+      BROKER_3 : kafka:9092
+      STRAPI_TOKEN: 3080d5e17f46899e60cf39dfbb80c7fed9f2727697c5f9e3863151a620de33798f9a5b7e467cd50aaa7a9a3f51b6087e436b9d301be3e10f9a50f7e4b9453e0c9de3241c9c020b5aaf212ec72a46fba3a8bf08a323207df257dea122c052c27b935fb6187351691b9a54950f58c74c24b5848799c0661d99300f0c6b19df150d
+      STRAPI_URL: http://strapi:1337
+      TOPIC: stock
+      FILE_NAME: stocks.csv
+    volumes:
+      - ./kafka-products-event-stocks/stocks.csv:/stocks.csv
+    depends_on:
+      - stock-consumer
+    networks:
+      - "strapi"
+
+  stock-consumer:
+    platform: linux/amd64
+    image: arthurescriou/stock-consumer:1.0.2
+    container_name: stock-consumer
+    environment:
+      BROKER_1 : kafka:9092
+      BROKER_2 : kafka:9092
+      BROKER_3 : kafka:9092
+      STRAPI_TOKEN: 3080d5e17f46899e60cf39dfbb80c7fed9f2727697c5f9e3863151a620de33798f9a5b7e467cd50aaa7a9a3f51b6087e436b9d301be3e10f9a50f7e4b9453e0c9de3241c9c020b5aaf212ec72a46fba3a8bf08a323207df257dea122c052c27b935fb6187351691b9a54950f58c74c24b5848799c0661d99300f0c6b19df150d
+      STRAPI_URL: http://strapi:1337
+      TOPIC: stock
+      BEGINNING: "false"
+      ERROR_TOPIC: error
+    networks:
+      - "strapi"
+
+networks:
+  strapi:
+    external: true
+    name: Strapi
