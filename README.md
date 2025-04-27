@@ -1,61 +1,101 @@
-# 🚀 Getting started with Strapi
+YILMAZ Demir 21211875
+FILATOV Vadym 21210463
+KASHPERUK Kristina 21210406
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+Projet Dockerisé avec Kafka et Strapi
+Ce projet utilise Docker Compose pour configurer et gérer plusieurs services pour un pipeline de données en temps réel, y compris Kafka, Strapi, Postgres, ainsi que divers producteurs et consommateurs. Il démontre comment ces services peuvent communiquer entre eux dans un environnement conteneurisé Docker.
 
-### `develop`
+Vue d'ensemble du projet
+Le projet se compose de deux configurations principales de Docker Compose :
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+docker-compose-part1.yml : Configure les services principaux tels que Postgres, Strapi, Kafka, Zookeeper, Mosquitto, MQTT-Kafka-Connector
 
-```
-npm run develop
-# or
-yarn develop
-```
+docker-compose-part2.yml : Contient les producteurs et consommateurs qui se connectent à Kafka et Strapi pour échanger des données.
 
-### `start`
+Architecture
+L'architecture du projet implique les services suivants :
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+Postgres : Utilisé comme base de données pour Strapi.
 
-```
-npm run start
-# or
-yarn start
-```
+Strapi : Un CMS sans tête qui interagit avec la base de données.
 
-### `build`
+Kafka : Un broker de messages utilisé pour gérer les flux de données en temps réel.
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+Zookeeper : Gère le cluster Kafka.
 
-```
-npm run build
-# or
-yarn build
-```
+Producteurs (Product, Event, Stock) : Ces services produisent des données vers des topics Kafka.
 
-## ⚙️ Deployment
+Consommateurs (Product, Event, Stock) : Ces services consomment des données à partir de topics Kafka et effectuent des actions telles que l'interaction avec Strapi.
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+Prérequis
+Assurez-vous d'avoir Docker et Docker Compose installés sur votre machine avant de commencer.
 
-```
-yarn strapi deploy
-```
+Docker
+Installer Docker : Guide d'installation de Docker
 
-## 📚 Learn more
+Installer Docker Compose : Guide d'installation de Docker Compose
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+Comment exécuter le projet
+Étape 1 : Démarrer les services de la Partie 1
+La première partie du projet inclut Kafka, Zookeeper, Postgres et Strapi. Pour lancer ces services, allez dans le dossier où se trouve le fichier docker-compose-part1.yml et exécutez les commandes suivantes :
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
+docker-compose -f docker-compose-part1.yml build
+docker-compose -f docker-compose-part1.yml up
 
-## ✨ Community
+OU, SI VOUS VOULEZ AUSSI UTILISEZ MOSQUITTO, FAITES
+docker-compose -f docker-compose-part1.yml build
+docker-compose -f docker-compose-part1.yml up strapi postgres zookeeper kafka mosquitto
+puis
+docker-compose -f docker-compose-part1.yml up mqtt-kafka-connector
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
+Cela démarrera tous les services définis dans docker-compose-part1.yml :
 
----
+Postgres sera accessible sur le port 5434.
 
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+Strapi sera accessible sur le port 1337 (à l'adresse http://localhost:1337).
+
+Kafka sera disponible sur le port 9092.
+
+Mosquitto sera disponible sur le port 1883.
+
+Puis, partez à l'adresse http://localhost:1337/admin pour accéder à l'interface d'administration de Strapi.
+Dans ce cas, connecter vous comme admin.
+Créez les collections nécessaires pour votre projet.
+Cela sont:
+
+PRODUCT:
+name: short text 
+description: long text 
+stock_available: integer (default 0) 
+image: single media (only image) 
+barcode: short text
+status: enumeration (safe|danger|empty)
+
+EVENT: 
+value: string
+metadata: JSON
+
+Étape 2 : Démarrer les services de la Partie 2
+Une fois les services de la Partie 1 en cours d'exécution, passez à l'étape suivante pour démarrer les producteurs et consommateurs. Allez dans le dossier où se trouve le fichier docker-compose-part2.yml et exécutez la commande suivante :
+
+docker-compose -f docker-compose-part2.yml build
+docker-compose -f docker-compose-part2.yml up
+Cela démarrera les producteurs et consommateurs qui se connecteront à Kafka et Strapi pour échanger des données en temps réel.
+
+Avec les deux parties en cours d'exécution, vous pouvez maintenant commencer à envoyer des données à Kafka et à les consommer avec Strapi.
+
+Ouvrez un nouveau terminal naviguer au opsci-strapi-frontend et exécutez les commandes suivantes:
+
+yarn install
+yarn dev
+o
+
+Le page de produit et events est maintenant accessible, vous pouvez naviguer
+
+BONUS:
+Si vous voulez modifier les stocks d'un produit, partez à https://mqtt-test-front.onrender.com:
+
+Entrez l'id du produit et son nouveau stock, puis envoyez la requete
+
+Conclusion
+Ce projet montre comment utiliser Docker Compose pour orchestrer plusieurs services et gérer des flux de données en temps réel entre différents producteurs et consommateurs, avec Kafka comme broker de messages et Strapi comme système de gestion de contenu.

@@ -71,6 +71,36 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - strapi
+  
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+    expose:
+      - "1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - strapi
+
+  mqtt-kafka-connector:
+    image: arthurescriou/mqtt-kafka-connector:1.0.0
+    container_name: mqtt-kafka-connector
+    depends_on:
+      - kafka
+      - mosquitto
+    environment:
+      BROKER_1: kafka:9092
+      BROKER_2: kafka:9092
+      BROKER_3: kafka:9092
+      KAFKA_TOPIC: stock
+      MQTT_TOPIC: topic
+      MQTT_ENDPOINT: ws://mosquitto:1883
+    networks:
+      - strapi
 
 networks:
   strapi:

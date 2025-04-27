@@ -94,7 +94,7 @@ services:
 
   stock-consumer:
     platform: linux/amd64
-    image: arthurescriou/stock-consumer:1.0.2
+    image: ionys/opsci-su-stock-consumer:latest
     container_name: stock-consumer
     environment:
       BROKER_1 : kafka:9092
