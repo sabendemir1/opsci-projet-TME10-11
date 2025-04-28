@@ -1,101 +1,101 @@
-YILMAZ Demir 21211875
-FILATOV Vadym 21210463
-KASHPERUK Kristina 21210406
+YILMAZ Demir 21211875  
+FILATOV Vadym 21210463  
+KASHPERUK Kristina 21210406  
+ 
+Projet Dockerisé avec Kafka et Strapi  
+Ce projet utilise Docker Compose pour configurer et gérer plusieurs services pour un pipeline de données en temps réel, y compris Kafka, Strapi, Postgres, ainsi que divers producteurs et consommateurs. Il démontre comment ces services peuvent communiquer entre eux dans un environnement conteneurisé Docker.  
 
-Projet Dockerisé avec Kafka et Strapi
-Ce projet utilise Docker Compose pour configurer et gérer plusieurs services pour un pipeline de données en temps réel, y compris Kafka, Strapi, Postgres, ainsi que divers producteurs et consommateurs. Il démontre comment ces services peuvent communiquer entre eux dans un environnement conteneurisé Docker.
+Vue d'ensemble du projet  
+Le projet se compose de deux configurations principales de Docker Compose :  
+ 
+docker-compose-part1.yml : Configure les services principaux tels que Postgres, Strapi, Kafka, Zookeeper, Mosquitto, MQTT-Kafka-Connector  
 
-Vue d'ensemble du projet
-Le projet se compose de deux configurations principales de Docker Compose :
+docker-compose-part2.yml : Contient les producteurs et consommateurs qui se connectent à Kafka et Strapi pour échanger des données.  
 
-docker-compose-part1.yml : Configure les services principaux tels que Postgres, Strapi, Kafka, Zookeeper, Mosquitto, MQTT-Kafka-Connector
+Architecture  
+L'architecture du projet implique les services suivants :  
 
-docker-compose-part2.yml : Contient les producteurs et consommateurs qui se connectent à Kafka et Strapi pour échanger des données.
+Postgres : Utilisé comme base de données pour Strapi.  
 
-Architecture
-L'architecture du projet implique les services suivants :
+Strapi : Un CMS sans tête qui interagit avec la base de données.  
 
-Postgres : Utilisé comme base de données pour Strapi.
+Kafka : Un broker de messages utilisé pour gérer les flux de données en temps réel.  
 
-Strapi : Un CMS sans tête qui interagit avec la base de données.
+Zookeeper : Gère le cluster Kafka.  
 
-Kafka : Un broker de messages utilisé pour gérer les flux de données en temps réel.
+Producteurs (Product, Event, Stock) : Ces services produisent des données vers des topics Kafka.  
 
-Zookeeper : Gère le cluster Kafka.
+Consommateurs (Product, Event, Stock) : Ces services consomment des données à partir de topics Kafka et effectuent des actions telles que l'interaction avec Strapi.  
 
-Producteurs (Product, Event, Stock) : Ces services produisent des données vers des topics Kafka.
+Prérequis  
+Assurez-vous d'avoir Docker et Docker Compose installés sur votre machine avant de commencer.  
 
-Consommateurs (Product, Event, Stock) : Ces services consomment des données à partir de topics Kafka et effectuent des actions telles que l'interaction avec Strapi.
+Docker  
+Installer Docker : Guide d'installation de Docker  
 
-Prérequis
-Assurez-vous d'avoir Docker et Docker Compose installés sur votre machine avant de commencer.
+Installer Docker Compose : Guide d'installation de Docker Compose  
 
-Docker
-Installer Docker : Guide d'installation de Docker
+Comment exécuter le projet  
+Étape 1 : Démarrer les services de la Partie 1  
+La première partie du projet inclut Kafka, Zookeeper, Postgres et Strapi. Pour lancer ces services, allez dans le dossier où se trouve le fichier docker-compose-part1.yml et exécutez les commandes suivantes :  
 
-Installer Docker Compose : Guide d'installation de Docker Compose
+docker-compose -f docker-compose-part1.yml build  
+docker-compose -f docker-compose-part1.yml up  
 
-Comment exécuter le projet
-Étape 1 : Démarrer les services de la Partie 1
-La première partie du projet inclut Kafka, Zookeeper, Postgres et Strapi. Pour lancer ces services, allez dans le dossier où se trouve le fichier docker-compose-part1.yml et exécutez les commandes suivantes :
+OU, SI VOUS VOULEZ AUSSI UTILISEZ MOSQUITTO, FAITES  
+docker-compose -f docker-compose-part1.yml build  
+docker-compose -f docker-compose-part1.yml up strapi postgres zookeeper kafka mosquitto  
+puis  
+docker-compose -f docker-compose-part1.yml up mqtt-kafka-connector  
 
-docker-compose -f docker-compose-part1.yml build
-docker-compose -f docker-compose-part1.yml up
+Cela démarrera tous les services définis dans docker-compose-part1.yml :  
 
-OU, SI VOUS VOULEZ AUSSI UTILISEZ MOSQUITTO, FAITES
-docker-compose -f docker-compose-part1.yml build
-docker-compose -f docker-compose-part1.yml up strapi postgres zookeeper kafka mosquitto
-puis
-docker-compose -f docker-compose-part1.yml up mqtt-kafka-connector
+Postgres sera accessible sur le port 5434.  
 
-Cela démarrera tous les services définis dans docker-compose-part1.yml :
+Strapi sera accessible sur le port 1337 (à l'adresse http://localhost:1337).  
 
-Postgres sera accessible sur le port 5434.
+Kafka sera disponible sur le port 9092.  
 
-Strapi sera accessible sur le port 1337 (à l'adresse http://localhost:1337).
+Mosquitto sera disponible sur le port 1883.  
+ 
+Puis, partez à l'adresse http://localhost:1337/admin pour accéder à l'interface d'administration de Strapi.  
+Dans ce cas, connecter vous comme admin.  
+Créez les collections nécessaires pour votre projet.  
+Cela sont:  
 
-Kafka sera disponible sur le port 9092.
+PRODUCT:  
+name: short text   
+description: long text  
+stock_available: integer (default 0)  
+image: single media (only image)  
+barcode: short text  
+status: enumeration (safe|danger|empty)  
 
-Mosquitto sera disponible sur le port 1883.
+EVENT:  
+value: string  
+metadata: JSON  
 
-Puis, partez à l'adresse http://localhost:1337/admin pour accéder à l'interface d'administration de Strapi.
-Dans ce cas, connecter vous comme admin.
-Créez les collections nécessaires pour votre projet.
-Cela sont:
+Étape 2 : Démarrer les services de la Partie 2  
+Une fois les services de la Partie 1 en cours d'exécution, passez à l'étape suivante pour démarrer les producteurs et consommateurs. Allez dans le dossier où se trouve le fichier docker-compose-part2.yml et exécutez la commande suivante :  
 
-PRODUCT:
-name: short text 
-description: long text 
-stock_available: integer (default 0) 
-image: single media (only image) 
-barcode: short text
-status: enumeration (safe|danger|empty)
+docker-compose -f docker-compose-part2.yml build  
+docker-compose -f docker-compose-part2.yml up  
+Cela démarrera les producteurs et consommateurs qui se connecteront à Kafka et Strapi pour échanger des données en temps réel.  
 
-EVENT: 
-value: string
-metadata: JSON
+Avec les deux parties en cours d'exécution, vous pouvez maintenant commencer à envoyer des données à Kafka et à les consommer avec Strapi.  
 
-Étape 2 : Démarrer les services de la Partie 2
-Une fois les services de la Partie 1 en cours d'exécution, passez à l'étape suivante pour démarrer les producteurs et consommateurs. Allez dans le dossier où se trouve le fichier docker-compose-part2.yml et exécutez la commande suivante :
+Ouvrez un nouveau terminal naviguer au opsci-strapi-frontend et exécutez les commandes suivantes:  
 
-docker-compose -f docker-compose-part2.yml build
-docker-compose -f docker-compose-part2.yml up
-Cela démarrera les producteurs et consommateurs qui se connecteront à Kafka et Strapi pour échanger des données en temps réel.
+yarn install  
+yarn dev  
+o  
 
-Avec les deux parties en cours d'exécution, vous pouvez maintenant commencer à envoyer des données à Kafka et à les consommer avec Strapi.
+Le page de produit et events est maintenant accessible, vous pouvez naviguer  
 
-Ouvrez un nouveau terminal naviguer au opsci-strapi-frontend et exécutez les commandes suivantes:
+BONUS:  
+Si vous voulez modifier les stocks d'un produit, partez à https://mqtt-test-front.onrender.com:  
 
-yarn install
-yarn dev
-o
+Entrez l'id du produit et son nouveau stock, puis envoyez la requete  
 
-Le page de produit et events est maintenant accessible, vous pouvez naviguer
-
-BONUS:
-Si vous voulez modifier les stocks d'un produit, partez à https://mqtt-test-front.onrender.com:
-
-Entrez l'id du produit et son nouveau stock, puis envoyez la requete
-
-Conclusion
+Conclusion  
 Ce projet montre comment utiliser Docker Compose pour orchestrer plusieurs services et gérer des flux de données en temps réel entre différents producteurs et consommateurs, avec Kafka comme broker de messages et Strapi comme système de gestion de contenu.
